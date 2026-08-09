@@ -7,6 +7,10 @@ const CF_WORKER_URLS = [
     "https://gartic-phone.72016.workers.dev"
 ];
 
+// ==========================================
+// 2. 安定化の要：ユーザーごとのWorker固定機能
+// ==========================================
+// ユーザーのIPアドレスを計算して、常に同じWorkerを割り当てる
 function getWorkerForUser(ip) {
     let hash = 0;
     for (let i = 0; i < ip.length; i++) {
@@ -23,24 +27,31 @@ const proxyAgent = new https.Agent({
     timeout: 60000 
 });
 
-
+// ==========================================
+// 3. メインプロキシ機能（http-proxy-middleware）
+// ==========================================
+// 注意: app.use('*') ではなく app.use('/') にすることでパスの破損(404)を防ぎます
 app.use('/', createProxyMiddleware({
+    // リクエストが来た人のIPを見て、担当のWorkerを決める
     router: (req) => {
+        // Renderが取得したユーザーのIPアドレス
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
         return getWorkerForUser(ip);
     },
     changeOrigin: true,
-    ws: true, 持
+    ws: true, // WebSocket (ゲームのリアルタイム通信) を維持
     agent: proxyAgent,
     
     onProxyReq: (proxyReq, req, res) => {
-     
+        // Workerに「Renderのドメイン」を教えて、正しく書き換えさせる
         proxyReq.setHeader('X-Forwarded-Host', req.get('host'));
         proxyReq.setHeader('X-Forwarded-Proto', 'https');
+        // Workerが勝手に圧縮して文字化けするのを防ぐ
         proxyReq.setHeader('Accept-Encoding', 'identity');
     },
     
     onProxyRes: (proxyRes, req, res) => {
+        // 本家の余計なセキュリティ制限を外して、Render上で安全に表示させる
         delete proxyRes.headers['content-security-policy'];
         delete proxyRes.headers['x-frame-options'];
         proxyRes.headers['access-control-allow-origin'] = '*';
