@@ -3,7 +3,9 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const CF_WORKER_URLS = [
-    "https://grt-ph0n.nemu0001.workers.dev"
+    "https://grt-ph0n.nemu0001.workers.dev",
+    "https://grt.72016.workers.dev",
+    "https://grt-nemu.myproxy0108.workers.dev"    
 ];
 
 // ==========================================
