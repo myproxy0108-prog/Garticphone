@@ -3,9 +3,7 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const CF_WORKER_URLS = [
-    "https://gartic-phone.nemu0001.workers.dev",
-    "https://gartic-phone.myproxy0108.workers.dev",
-    "https://gartic-phone.72016.workers.dev"
+    "https://grt-ph0n.nemu0001.workers.dev"
 ];
 
 // ==========================================
